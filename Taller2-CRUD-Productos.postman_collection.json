@@ -1,0 +1,275 @@
+{
+  "info": {
+    "name": "Taller 2 - CRUD Productos (EcommerceApi)",
+    "description": "CRUD de Productos con Entity Framework Core y MySQL. Taller 2 - Luis Silva y Fabian Orlando.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "idProducto",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. GET - Obtener todos los productos",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/Producto/GetProductos",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Producto",
+            "GetProductos"
+          ]
+        },
+        "description": "Devuelve todos los productos almacenados en la base de datos. Responde 200."
+      },
+      "response": []
+    },
+    {
+      "name": "2. POST - Crear producto",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Guarda el Id del producto creado para usarlo en el PUT y el DELETE",
+              "if (pm.response.code === 200) {",
+              "    const producto = pm.response.json();",
+              "    pm.collectionVariables.set('idProducto', producto.id);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Laptop Lenovo\",\n  \"descripcion\": \"Laptop para trabajo y estudio\",\n  \"precio\": 2500000,\n  \"stock\": 10\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/Producto/CreateProducto",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Producto",
+            "CreateProducto"
+          ]
+        },
+        "description": "Crea un producto. Responde 200 con el producto creado. El Id se guarda en la variable idProducto."
+      },
+      "response": []
+    },
+    {
+      "name": "3. PUT - Actualizar producto",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Laptop Lenovo ThinkPad\",\n  \"descripcion\": \"Laptop actualizada\",\n  \"precio\": 2750000,\n  \"stock\": 8\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/Producto/UpdateProducto/{{idProducto}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Producto",
+            "UpdateProducto",
+            "{{idProducto}}"
+          ]
+        },
+        "description": "Actualiza el producto indicado. Responde 200 con el producto actualizado, o 404 si no existe."
+      },
+      "response": []
+    },
+    {
+      "name": "4. DELETE - Eliminar producto",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/Producto/DeleteProducto/{{idProducto}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Producto",
+            "DeleteProducto",
+            "{{idProducto}}"
+          ]
+        },
+        "description": "Elimina el producto indicado. Responde 200 con un mensaje, o 404 si no existe."
+      },
+      "response": []
+    },
+    {
+      "name": "Validaciones",
+      "item": [
+        {
+          "name": "400 - Nombre vacio",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"\",\n  \"descripcion\": \"Sin nombre\",\n  \"precio\": 1000,\n  \"stock\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/Producto/CreateProducto",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "Producto",
+                "CreateProducto"
+              ]
+            },
+            "description": "El nombre no puede estar vacio. Responde 400."
+          },
+          "response": []
+        },
+        {
+          "name": "400 - Precio negativo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Mouse\",\n  \"descripcion\": \"Precio invalido\",\n  \"precio\": -500,\n  \"stock\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/Producto/CreateProducto",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "Producto",
+                "CreateProducto"
+              ]
+            },
+            "description": "El precio no puede ser negativo. Responde 400."
+          },
+          "response": []
+        },
+        {
+          "name": "400 - Stock negativo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Teclado\",\n  \"descripcion\": \"Stock invalido\",\n  \"precio\": 80000,\n  \"stock\": -3\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/Producto/CreateProducto",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "Producto",
+                "CreateProducto"
+              ]
+            },
+            "description": "El stock no puede ser negativo. Responde 400."
+          },
+          "response": []
+        },
+        {
+          "name": "404 - PUT a producto inexistente",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"No existe\",\n  \"descripcion\": \"Prueba 404\",\n  \"precio\": 1000,\n  \"stock\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/Producto/UpdateProducto/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "Producto",
+                "UpdateProducto",
+                "99999"
+              ]
+            },
+            "description": "Responde 404 porque el producto no existe."
+          },
+          "response": []
+        },
+        {
+          "name": "404 - DELETE a producto inexistente",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/Producto/DeleteProducto/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "Producto",
+                "DeleteProducto",
+                "99999"
+              ]
+            },
+            "description": "Responde 404 porque el producto no existe."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

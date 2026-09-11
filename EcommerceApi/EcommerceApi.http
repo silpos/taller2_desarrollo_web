@@ -1,0 +1,74 @@
+@EcommerceApi_HostAddress = http://localhost:5000
+
+### Obtener todos los productos
+GET {{EcommerceApi_HostAddress}}/Producto/GetProductos
+Accept: application/json
+
+### Crear producto
+POST {{EcommerceApi_HostAddress}}/Producto/CreateProducto
+Content-Type: application/json
+
+{
+  "nombre": "Laptop Lenovo",
+  "descripcion": "Laptop para trabajo y estudio",
+  "precio": 2500000,
+  "stock": 10
+}
+
+### Actualizar producto
+PUT {{EcommerceApi_HostAddress}}/Producto/UpdateProducto/1
+Content-Type: application/json
+
+{
+  "nombre": "Laptop Lenovo ThinkPad",
+  "descripcion": "Laptop para trabajo y estudio",
+  "precio": 2750000,
+  "stock": 8
+}
+
+### Eliminar producto
+DELETE {{EcommerceApi_HostAddress}}/Producto/DeleteProducto/1
+
+### Validacion: nombre vacio (debe responder 400)
+POST {{EcommerceApi_HostAddress}}/Producto/CreateProducto
+Content-Type: application/json
+
+{
+  "nombre": "",
+  "descripcion": "Sin nombre",
+  "precio": 1000,
+  "stock": 1
+}
+
+### Validacion: precio negativo (debe responder 400)
+POST {{EcommerceApi_HostAddress}}/Producto/CreateProducto
+Content-Type: application/json
+
+{
+  "nombre": "Mouse",
+  "descripcion": "Precio invalido",
+  "precio": -500,
+  "stock": 1
+}
+
+### Validacion: stock negativo (debe responder 400)
+POST {{EcommerceApi_HostAddress}}/Producto/CreateProducto
+Content-Type: application/json
+
+{
+  "nombre": "Teclado",
+  "descripcion": "Stock invalido",
+  "precio": 80000,
+  "stock": -3
+}
+
+### Producto inexistente (debe responder 404)
+PUT {{EcommerceApi_HostAddress}}/Producto/UpdateProducto/99999
+Content-Type: application/json
+
+{
+  "nombre": "No existe",
+  "descripcion": "Prueba 404",
+  "precio": 1000,
+  "stock": 1
+}
