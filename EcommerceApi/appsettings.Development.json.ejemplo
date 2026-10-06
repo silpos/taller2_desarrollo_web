@@ -8,6 +8,12 @@
       "Microsoft.AspNetCore": "Warning"
     }
   },
+  "JwtSettings": {
+    "Key": "CAMBIAR_POR_UNA_CLAVE_SECRETA_LARGA_DE_AL_MENOS_32_CARACTERES",
+    "Issuer": "EcommerceApi",
+    "Audience": "EcommerceAngular",
+    "DurationInMinutes": 60
+  },
   "CloudinarySettings": {
     "CloudName": "TU_CLOUD_NAME",
     "ApiKey": "TU_API_KEY",

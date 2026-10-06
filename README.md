@@ -181,3 +181,28 @@ quedo guardado:
 ```sql
 SELECT * FROM EcommerceDB.Producto;
 ```
+
+## Usuarios, login y JWT (Guía 1)
+
+- `Usuario` (Nombre, Email, Password) relacionado con `Producto` (`UsuarioId`, opcional para no
+  afectar los productos que ya existían).
+- Las contraseñas se guardan cifradas con `PasswordHasher`.
+- Al iniciar sesión la API devuelve un **JWT** firmado con `JwtSettings:Key`.
+- Crear, editar y eliminar productos exige el token (`[Authorize]`); consultar es público.
+- Al crear un producto, su dueño (`UsuarioId`) sale del token.
+
+| Método | Ruta | Respuesta |
+|--------|------|-----------|
+| POST | `/api/Auth/Register` | 200 "Usuario registrado correctamente." / 400 si faltan datos o el correo ya existe |
+| POST | `/api/Auth/Login` | 200 con el token (texto) / 401 "Usuario o contraseña incorrectos." |
+
+El token se envía en el encabezado `Authorization: Bearer <token>`.
+
+Migración: `AddUsuario` (crea la tabla `Usuario` y la columna `Producto.UsuarioId`):
+
+```bash
+dotnet ef database update --project EcommerceApi
+```
+
+`JwtSettings:Key` debe tener **al menos 32 caracteres** (lo exige HmacSha256). El valor de
+`appsettings.json` es solo un ejemplo: pon tu propia clave en `appsettings.Development.json`.

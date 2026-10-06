@@ -95,3 +95,36 @@ Content-Type: application/json
   "precio": 1000,
   "stock": 1
 }
+
+### ---------- Usuarios y JWT ----------
+
+### Registrar usuario
+POST {{EcommerceApi_HostAddress}}/api/Auth/Register
+Content-Type: application/json
+
+{
+  "nombre": "Luis",
+  "email": "luis@correo.com",
+  "password": "Clave123"
+}
+
+### Login (la respuesta es el token: copialo en @token)
+POST {{EcommerceApi_HostAddress}}/api/Auth/Login
+Content-Type: application/json
+
+{
+  "email": "luis@correo.com",
+  "password": "Clave123"
+}
+
+### Crear producto con token (sin token responde 401)
+@token = PEGAR_AQUI_EL_TOKEN
+POST {{EcommerceApi_HostAddress}}/api/producto
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "nombre": "Mouse",
+  "precio": 50000,
+  "stock": 3
+}

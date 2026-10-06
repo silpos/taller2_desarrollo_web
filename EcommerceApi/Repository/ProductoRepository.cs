@@ -23,7 +23,7 @@ namespace EcommerceApi.Repository
             return await _context.Producto.ToListAsync();
         }
 
-        public async Task<Producto> CreateProducto(ProductoDto item)
+        public async Task<Producto> CreateProducto(ProductoDto item, int userId)
         {
             Validar(item);
 
@@ -41,7 +41,8 @@ namespace EcommerceApi.Repository
                 Descripcion = item.Descripcion?.Trim(),
                 Precio = item.Precio,
                 Stock = item.Stock,
-                ImagenUrl = imagenUrl
+                ImagenUrl = imagenUrl,
+                UsuarioId = userId // dueno del producto: el usuario del token
             };
 
             await _context.Producto.AddAsync(nuevoProducto);
