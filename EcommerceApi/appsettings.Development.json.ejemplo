@@ -7,5 +7,10 @@
       "Default": "Information",
       "Microsoft.AspNetCore": "Warning"
     }
+  },
+  "CloudinarySettings": {
+    "CloudName": "TU_CLOUD_NAME",
+    "ApiKey": "TU_API_KEY",
+    "ApiSecret": "TU_API_SECRET"
   }
 }

@@ -2,6 +2,7 @@ using EcommerceApi.DB;
 using EcommerceApi.Interfaces;
 using EcommerceApi.Models;
 using EcommerceApi.Models.Dtos;
+using EcommerceApi.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace EcommerceApi.Repository
@@ -9,10 +10,12 @@ namespace EcommerceApi.Repository
     public class ProductoRepository : IProductoRepository
     {
         private readonly AppDbContext _context;
+        private readonly ICloudinaryService _cloudinaryService;
 
-        public ProductoRepository(AppDbContext context)
+        public ProductoRepository(AppDbContext context, ICloudinaryService cloudinaryService)
         {
             _context = context;
+            _cloudinaryService = cloudinaryService;
         }
 
         public async Task<List<Producto>> GetProductos()
@@ -24,12 +27,21 @@ namespace EcommerceApi.Repository
         {
             Validar(item);
 
+            // La imagen es opcional: si viene en Base64 se sube a Cloudinary
+            // y se guarda solo la URL que devuelve el servicio.
+            string? imagenUrl = null;
+            if (!string.IsNullOrWhiteSpace(item.ImagenBase64))
+            {
+                imagenUrl = await _cloudinaryService.UploadImageAsync(item.ImagenBase64);
+            }
+
             Producto nuevoProducto = new()
             {
                 Nombre = item.Nombre!.Trim(),
                 Descripcion = item.Descripcion?.Trim(),
                 Precio = item.Precio,
-                Stock = item.Stock
+                Stock = item.Stock,
+                ImagenUrl = imagenUrl
             };
 
             await _context.Producto.AddAsync(nuevoProducto);
@@ -54,6 +66,12 @@ namespace EcommerceApi.Repository
             productoExiste.Descripcion = item.Descripcion?.Trim();
             productoExiste.Precio = item.Precio;
             productoExiste.Stock = item.Stock;
+
+            // Si se envia una imagen nueva se reemplaza; si no, se conserva la actual.
+            if (!string.IsNullOrWhiteSpace(item.ImagenBase64))
+            {
+                productoExiste.ImagenUrl = await _cloudinaryService.UploadImageAsync(item.ImagenBase64);
+            }
 
             await _context.SaveChangesAsync();
 

@@ -1,4 +1,4 @@
-@EcommerceApi_HostAddress = http://localhost:5000
+@EcommerceApi_HostAddress = http://localhost:5094
 
 ### Obtener todos los productos
 GET {{EcommerceApi_HostAddress}}/Producto/GetProductos
@@ -13,6 +13,29 @@ Content-Type: application/json
   "descripcion": "Laptop para trabajo y estudio",
   "precio": 2500000,
   "stock": 10
+}
+
+### Crear producto con imagen (se sube a Cloudinary y se guarda la URL)
+POST {{EcommerceApi_HostAddress}}/Producto/CreateProducto
+Content-Type: application/json
+
+{
+  "nombre": "Laptop Lenovo",
+  "descripcion": "Laptop para trabajo y estudio",
+  "precio": 2500000,
+  "stock": 10,
+  "imagenBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAEklEQVR4nGP4z8CAFWEXHbQSACj/P8Fu7N9hAAAAAElFTkSuQmCC"
+}
+
+### Validacion: Base64 invalido (debe responder 400)
+POST {{EcommerceApi_HostAddress}}/Producto/CreateProducto
+Content-Type: application/json
+
+{
+  "nombre": "Mouse",
+  "precio": 50000,
+  "stock": 1,
+  "imagenBase64": "esto-no-es-base64"
 }
 
 ### Actualizar producto

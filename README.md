@@ -100,7 +100,7 @@ dotnet tool install --global dotnet-ef
 dotnet run --project EcommerceApi
 ```
 
-La API queda en `http://localhost:5000`.
+La API queda en `http://localhost:5094` (perfil `http` de `launchSettings.json`).
 
 ## Endpoints
 
@@ -121,8 +121,37 @@ Ejemplo de body para POST y PUT:
   "nombre": "Laptop Lenovo",
   "descripcion": "Laptop para trabajo y estudio",
   "precio": 2500000,
-  "stock": 10
+  "stock": 10,
+  "imagenBase64": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ..."
 }
+```
+
+`imagenBase64` es opcional. En el PUT, si no se envia, se conserva la imagen actual.
+
+## Imagenes con Cloudinary
+
+Las imagenes no se guardan en MySQL:
+
+1. El cliente envia la imagen en Base64 (`imagenBase64`).
+2. `CloudinaryService` (`Services/`) la convierte a bytes y la sube a la carpeta `productos` de Cloudinary.
+3. Cloudinary devuelve una URL segura, que se guarda en `Producto.ImagenUrl`.
+
+Credenciales: seccion `CloudinarySettings` (clase `Configuration/CloudinarySettings.cs`).
+En `appsettings.json` solo hay valores de ejemplo; las reales van en
+`appsettings.Development.json` (ignorado por git, ver `appsettings.Development.json.ejemplo`):
+
+```json
+"CloudinarySettings": {
+  "CloudName": "TU_CLOUD_NAME",
+  "ApiKey": "TU_API_KEY",
+  "ApiSecret": "TU_API_SECRET"
+}
+```
+
+La migracion `AddImagenUrlToProducto` agrega la columna `ImagenUrl`:
+
+```bash
+dotnet ef database update --project EcommerceApi
 ```
 
 ### Validaciones
@@ -132,6 +161,7 @@ En POST y PUT se valida que:
 1. El nombre no puede estar vacio.
 2. El precio no puede ser negativo.
 3. El stock no puede ser negativo.
+4. Si se envia `imagenBase64`, debe ser un Base64 valido.
 
 Si una validacion falla, la API responde `400 Bad Request` con un mensaje.
 Si el producto del PUT o del DELETE no existe, responde `404 Not Found`.

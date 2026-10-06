@@ -1,0 +1,543 @@
+{
+  "info": {
+    "name": "Taller 3 - Productos con imagenes en Cloudinary (EcommerceApi)",
+    "description": "CRUD de Productos con EF Core + MySQL e imagenes almacenadas en Cloudinary.\nLa API recibe la imagen en Base64 (imagenBase64), la sube a Cloudinary y guarda solo la URL en MySQL (imagenUrl).\n\nEjecutar en orden (Run collection). Antes: dotnet run --project EcommerceApi",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5094",
+      "type": "string"
+    },
+    {
+      "key": "idProducto",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "idSinImagen",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "imagenUrl",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "imagenBase64",
+      "value": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAT0lEQVR42u3PQQkAAAgEsItz/fMYxgi+hcEKLNO+FgEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQGBK7Dzk8EP6rLqewAAAABJRU5ErkJggg==",
+      "type": "string",
+      "description": "PNG 64x64 rojo de ejemplo. Reemplazar por el Base64 de cualquier imagen."
+    },
+    {
+      "key": "imagenBase64Nueva",
+      "value": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAUElEQVR42u3PQQkAAAgEsItjJrMbxgi+hcEKLNXzWgQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQErsAC3WHhPAW50FQAAAAASUVORK5CYII=",
+      "type": "string",
+      "description": "PNG 64x64 azul, usado para reemplazar la imagen en el PUT."
+    }
+  ],
+  "item": [
+    {
+      "name": "1. POST - Crear producto CON imagen (Cloudinary)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/Producto/CreateProducto",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Producto",
+            "CreateProducto"
+          ]
+        },
+        "description": "Envia la imagen en Base64. La API la sube a la carpeta 'productos' de Cloudinary y guarda la URL en ImagenUrl. Guarda idProducto e imagenUrl para los siguientes requests.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Laptop Lenovo\",\n  \"descripcion\": \"Laptop para trabajo y estudio\",\n  \"precio\": 2500000,\n  \"stock\": 10,\n  \"imagenBase64\": \"{{imagenBase64}}\"\n}"
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+              "const p = pm.response.json();",
+              "pm.test('Guarda la URL de Cloudinary en imagenUrl', () => pm.expect(p.imagenUrl).to.include('res.cloudinary.com').and.include('/productos/'));",
+              "pm.collectionVariables.set('idProducto', p.id);",
+              "pm.collectionVariables.set('imagenUrl', p.imagenUrl);",
+              "console.log('Imagen:', p.imagenUrl);",
+              "// Comprueba que la URL devuelta realmente sirve la imagen desde Cloudinary",
+              "pm.sendRequest(p.imagenUrl, (err, res) => {",
+              "    pm.test('La imagen existe en Cloudinary', () => {",
+              "        pm.expect(err).to.be.null;",
+              "        pm.expect(res.code).to.eql(200);",
+              "        pm.expect(res.headers.get('Content-Type')).to.include('image');",
+              "    });",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. GET - Obtener todos los productos",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/Producto/GetProductos",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Producto",
+            "GetProductos"
+          ]
+        },
+        "description": ""
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+              "const lista = pm.response.json();",
+              "pm.test('Incluye el producto creado con su imagenUrl', () => {",
+              "    const p = lista.find(x => x.id == pm.collectionVariables.get('idProducto'));",
+              "    pm.expect(p).to.exist;",
+              "    pm.expect(p.imagenUrl).to.eql(pm.collectionVariables.get('imagenUrl'));",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. PUT - Actualizar SIN imagen (conserva la actual)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/Producto/UpdateProducto/{{idProducto}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Producto",
+            "UpdateProducto",
+            "{{idProducto}}"
+          ]
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Laptop Lenovo ThinkPad\",\n  \"descripcion\": \"Laptop para trabajo y estudio\",\n  \"precio\": 2750000,\n  \"stock\": 8\n}"
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+              "pm.test('Conserva la misma imagenUrl', () => pm.expect(pm.response.json().imagenUrl).to.eql(pm.collectionVariables.get('imagenUrl')));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. PUT - Actualizar CON imagen nueva (reemplaza)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/Producto/UpdateProducto/{{idProducto}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Producto",
+            "UpdateProducto",
+            "{{idProducto}}"
+          ]
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Laptop Lenovo ThinkPad\",\n  \"descripcion\": \"Laptop con imagen nueva\",\n  \"precio\": 2750000,\n  \"stock\": 8,\n  \"imagenBase64\": \"{{imagenBase64Nueva}}\"\n}"
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+              "const p = pm.response.json();",
+              "pm.test('La imagenUrl cambio', () => {",
+              "    pm.expect(p.imagenUrl).to.include('res.cloudinary.com');",
+              "    pm.expect(p.imagenUrl).to.not.eql(pm.collectionVariables.get('imagenUrl'));",
+              "});",
+              "pm.collectionVariables.set('imagenUrl', p.imagenUrl);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. POST - Crear producto SIN imagen (opcional)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/Producto/CreateProducto",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Producto",
+            "CreateProducto"
+          ]
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Mouse inalambrico\",\n  \"descripcion\": \"Producto sin imagen\",\n  \"precio\": 80000,\n  \"stock\": 20\n}"
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+              "pm.test('imagenUrl es null', () => pm.expect(pm.response.json().imagenUrl).to.be.null);",
+              "pm.collectionVariables.set('idSinImagen', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Validaciones",
+      "item": [
+        {
+          "name": "400 - Base64 invalido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/Producto/CreateProducto",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "Producto",
+                "CreateProducto"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Teclado\",\n  \"precio\": 50000,\n  \"stock\": 1,\n  \"imagenBase64\": \"esto-no-es-base64\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Mensaje de Base64 invalido', () => pm.expect(pm.response.json().mensaje).to.include('Base64'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "400 - Nombre vacio",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/Producto/CreateProducto",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "Producto",
+                "CreateProducto"
+              ]
+            },
+            "description": "Se valida antes de subir la imagen: no se sube nada a Cloudinary.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"\",\n  \"precio\": 1000,\n  \"stock\": 1,\n  \"imagenBase64\": \"{{imagenBase64}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "400 - Precio negativo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/Producto/CreateProducto",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "Producto",
+                "CreateProducto"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Mouse\",\n  \"precio\": -500,\n  \"stock\": 1\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "400 - Stock negativo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/Producto/CreateProducto",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "Producto",
+                "CreateProducto"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Teclado\",\n  \"precio\": 80000,\n  \"stock\": -3\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "404 - PUT a producto inexistente",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/Producto/UpdateProducto/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "Producto",
+                "UpdateProducto",
+                "99999"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"No existe\",\n  \"precio\": 1000,\n  \"stock\": 1\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Limpieza",
+      "item": [
+        {
+          "name": "DELETE - Eliminar producto con imagen",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/Producto/DeleteProducto/{{idProducto}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "Producto",
+                "DeleteProducto",
+                "{{idProducto}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE - Eliminar producto sin imagen",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/Producto/DeleteProducto/{{idSinImagen}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "Producto",
+                "DeleteProducto",
+                "{{idSinImagen}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
