@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
 namespace EcommerceApi.Models
@@ -21,5 +22,12 @@ namespace EcommerceApi.Models
 
         public string? ImagenUrl { get; set; }
 
+        // Dueno del producto (el usuario que lo creo). Es opcional (int?) porque los
+        // productos creados antes de tener usuarios no tienen dueno.
+        public int? UsuarioId { get; set; }
+
+        // [JsonIgnore]: al devolver productos en JSON no se incluye el usuario completo
+        [JsonIgnore]
+        public Usuario? Usuario { get; set; }
     }
 }

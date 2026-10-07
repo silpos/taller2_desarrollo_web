@@ -8,5 +8,6 @@ namespace EcommerceApi.DB
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<Producto> Producto { get; set; }
+        public DbSet<Usuario> Usuario { get; set; }
     }
 }
